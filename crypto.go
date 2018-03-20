@@ -73,6 +73,8 @@ func CreateMessage(msg string, algo string, rsaPublicPath string, rsaPrivatePath
 
 func LoadMessage(msg string, rsaPublicPath string, rsaPrivatePath string) (Message, error) {
   var m Message
+
+  var data []string
   var algo string
   var keys []string
   var signature string
@@ -88,25 +90,34 @@ func LoadMessage(msg string, rsaPublicPath string, rsaPrivatePath string) (Messa
     return nil, priverr
   }
 
-  msgSlice := clearStringArray(strings.Split(msg, MSG_SPLITTER))
-  if len(msgSlice) < 4 {
-    return nil, fmt.Errorf("Invalid message format, code 0x01")
+  start := 0
+  end := 0
+  for end < len(msg) {
+    start, end = parseSlice(msg[end:])
+    if start == -1 || end == -1 {
+      continue
+    }
+    data = append(data, msg[start:end])
   }
 
-  algo = strings.ToLower(parseSlice(msgSlice[0]))
+  if len(data) < 4 {
+    return nil, fmt.Errorf("Bad format message")
+  }
+
+  algo = strings.ToLower(data[0])
 
   if indexString(KNOWN_ALGO, algo) == -1 {
       return nil, fmt.Errorf("Unknown algo : %s", algo)
   }
 
-  nbKey := len(msgSlice) - 3
+  nbKey := len(data) - 3
 
   for index := 0 ; index < nbKey; index++ {
-    keys = append(keys, parseSlice(msgSlice[1+index]))
+    keys = append(keys, data[1+index])
   }
 
-  signature = parseSlice(msgSlice[len(msgSlice)-2])
-  cypher = parseSlice(msgSlice[len(msgSlice)-1])
+  signature = data[len(data)-2]
+  cypher = data[len(data)-1]
 
   m =  &message{public, private, algo, keys, signature, cypher}
   return m, nil

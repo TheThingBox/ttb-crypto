@@ -56,15 +56,33 @@ func clearStringArray(s []string) []string {
     return r
 }
 
-func parseSlice(sl string) (string){
-  i := parseInt(sl[:MSG_SIZE_BYTES], 16)
-  s := parseInt(sl[MSG_SIZE_BYTES:MSG_SIZE_BYTES+i], 16)
-  return sl[MSG_SIZE_BYTES+i:MSG_SIZE_BYTES+i+s]
+func parseSlice(sl string) (int, int){
+  if strings.HasPrefix(sl, MSG_PREFFIX) == false {
+    return -1, -1
+  }
+  lenPre := len(MSG_PREFFIX)
+  lenSl := len(sl)
+  if lenSl < lenPre+MSG_SIZE_BYTES {
+      return -1, -1
+  }
+  i := parseInt(sl[lenPre:lenPre+MSG_SIZE_BYTES], 16)
+
+  if lenSl < lenPre+MSG_SIZE_BYTES+i {
+      return -1, -1
+  }
+
+  s := parseInt(sl[lenPre+MSG_SIZE_BYTES:lenPre+MSG_SIZE_BYTES+i], 16)
+
+  if lenSl < lenPre+MSG_SIZE_BYTES+i+s {
+      return -1, -1
+  }
+
+  return (lenPre+MSG_SIZE_BYTES+i), (lenPre+MSG_SIZE_BYTES+i+s)
 }
 
 func createSlice(w string) string {
   var m bytes.Buffer
-  m.WriteString(MSG_SPLITTER)
+  m.WriteString(MSG_PREFFIX)
   lenWord := strconv.FormatInt(int64(len(w)), 16)
   lenLen := strconv.FormatInt(int64(len(lenWord)), 16)
   if len(lenLen) > MSG_SIZE_BYTES {

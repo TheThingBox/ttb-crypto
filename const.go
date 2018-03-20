@@ -1,7 +1,7 @@
 package ttb_crypto
 
 const (
-  MSG_SPLITTER      = "0x"
+  MSG_PREFFIX       = "0x"
   MSG_SIZE_BYTES    = 2
 )
 
