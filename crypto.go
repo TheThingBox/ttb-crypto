@@ -102,7 +102,7 @@ func LoadMessage(msg string, rsaPublicPath string, rsaPrivatePath string) (Messa
       break
     }
     
-    fmt.Println(i+start:, i+end)
+    fmt.Println(i+start, i+end)
     data = append(data, msg[i+start:i+end])
   }
 
