@@ -94,16 +94,13 @@ func LoadMessage(msg string, rsaPublicPath string, rsaPrivatePath string) (Messa
   end := 0
   i := 0
   
-  for end > -1 && end < len(msg) {
-    i = i+end
-    fmt.Println(i)
+  for i < len(msg) {
     start, end = parseSlice(msg[i:])
     if start == -1 || end == -1 {
       break
     }
-    
-    fmt.Println(i+start, i+end)
-    data = append(data, msg[i+start:i+end])
+    data = append(data, msg[i+start:i+end])    
+    i = i+end
   }
 
   if len(data) < 4 {
