@@ -93,6 +93,7 @@ func LoadMessage(msg string, rsaPublicPath string, rsaPrivatePath string) (Messa
   start := 0
   end := 0
   for end < len(msg) {
+    fmt.Println(end, len(msg))
     start, end = parseSlice(msg[end:])
     if start == -1 || end == -1 {
       continue
