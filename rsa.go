@@ -25,17 +25,22 @@ type rsaPublic interface {
 }
 
 func loadPublicKey(path string) (rsaPublic, error) {
+  var block
   if fileExists(path) == false {
-    return nil, fmt.Errorf("Invalid path or the file does not exist: %s", path)
-  }
-  pemBytes, err := ioutil.ReadFile(path)
-  if err != nil {
-    return nil, err
-  }
+    block, _ = pem.Decode([]byte(path))
+    if block == nil {
+      return nil, fmt.Errorf("Invalid path or the file does not exist: %s", path)
+    }
+  } else {
+    pemBytes, err := ioutil.ReadFile(path)
+    if err != nil {
+      return nil, err
+    }
 
-  block, _ := pem.Decode(pemBytes)
-  if block == nil {
-    return nil, fmt.Errorf("ssh: no key found")
+    block, _ = pem.Decode(pemBytes)
+    if block == nil {
+      return nil, fmt.Errorf("ssh: no key found")
+    }
   }
 
   var sshKey rsaPublic
@@ -94,17 +99,22 @@ type rsaPrivate interface {
 }
 
 func loadPrivateKey(path string) (rsaPrivate, error) {
+  var block
   if fileExists(path) == false {
-    return nil, fmt.Errorf("Invalid path or the file does not exist: %s", path)
-  }
-  pemBytes, err := ioutil.ReadFile(path)
-  if err != nil {
-    return nil, err
-  }
+    block, _ = pem.Decode([]byte(path))
+    if block == nil {
+      return nil, fmt.Errorf("Invalid path or the file does not exist: %s", path)
+    }
+  } else {
+    pemBytes, err := ioutil.ReadFile(path)
+    if err != nil {
+      return nil, err
+    }
 
-  block, _ := pem.Decode(pemBytes)
-  if block == nil {
-    return nil, fmt.Errorf("ssh: no key found")
+    block, _ = pem.Decode(pemBytes)
+    if block == nil {
+      return nil, fmt.Errorf("ssh: no key found")
+    }
   }
 
   var sshKey rsaPrivate
