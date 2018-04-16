@@ -29,7 +29,7 @@ func loadPublicKey(path string) (rsaPublic, error) {
   var block *pem.Block = nil
   var pemStart = []byte("\n-----BEGIN ")
   if fileExists(path) == false {
-    var key = []byte(path)
+    var key = []byte(strings.Replace(path, `\n`, "\n", -1))
     if bytes.HasPrefix(key, pemStart[1:]) || bytes.Index(key, pemStart) >= 0 {
       block, _ = pem.Decode(key)
       if block == nil {
@@ -109,7 +109,7 @@ func loadPrivateKey(path string) (rsaPrivate, error) {
   var block *pem.Block = nil
   var pemStart = []byte("\n-----BEGIN ")
   if fileExists(path) == false {
-    var key = []byte(path)
+    var key = []byte(strings.Replace(path, `\n`, "\n", -1))
     if bytes.HasPrefix(key, pemStart[1:]) || bytes.Index(key, pemStart) >= 0 {
       block, _ = pem.Decode(key)
       if block == nil {
