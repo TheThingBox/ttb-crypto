@@ -33,10 +33,10 @@ func loadPublicKey(path string) (rsaPublic, error) {
     if bytes.HasPrefix(key, pemStart[1:]) || bytes.Index(key, pemStart) >= 0 {
       block, _ = pem.Decode(key)
       if block == nil {
-        return nil, fmt.Errorf("ssh: no key found")
+        return nil, fmt.Errorf("ssh: no key found into :\n%s\n", key)
       }
     } else {
-      return nil, fmt.Errorf("Invalid path or the file does not exist: %s", path)
+      return nil, fmt.Errorf("Invalid path or the file does not exist: %s\n", path)
     }
   } else {
     pemBytes, err := ioutil.ReadFile(path)
@@ -46,7 +46,7 @@ func loadPublicKey(path string) (rsaPublic, error) {
 
     block, _ = pem.Decode(pemBytes)
     if block == nil {
-      return nil, fmt.Errorf("ssh: no key found")
+      return nil, fmt.Errorf("ssh: no key found into :\n%s\n", key)
     }
   }
 
@@ -113,10 +113,10 @@ func loadPrivateKey(path string) (rsaPrivate, error) {
     if bytes.HasPrefix(key, pemStart[1:]) || bytes.Index(key, pemStart) >= 0 {
       block, _ = pem.Decode(key)
       if block == nil {
-        return nil, fmt.Errorf("ssh: no key found")
+        return nil, fmt.Errorf("ssh: no key found into :\n%s\n", key)
       }
     } else {
-      return nil, fmt.Errorf("Invalid path or the file does not exist: %s", path)
+      return nil, fmt.Errorf("Invalid path or the file does not exist: %s\n", path)
     }
   } else {
     pemBytes, err := ioutil.ReadFile(path)
@@ -125,8 +125,8 @@ func loadPrivateKey(path string) (rsaPrivate, error) {
     }
 
     block, _ = pem.Decode(pemBytes)
-    if block == nil {
-      return nil, fmt.Errorf("ssh: no key found")
+    if block == nil
+      return nil, fmt.Errorf("ssh: no key found into :\n%s\n", key)
     }
   }
 
@@ -140,14 +140,14 @@ func loadPrivateKey(path string) (rsaPrivate, error) {
     }
     rawkey = rsa
   default:
-    return nil, fmt.Errorf("ssh: unsupported key type %q", block.Type)
+    return nil, fmt.Errorf("ssh: unsupported key type %q\n", block.Type)
   }
 
   switch t := rawkey.(type) {
   case *rsa.PrivateKey:
     sshKey = &rsaPrivateKey{t}
   default:
-    return nil, fmt.Errorf("ssh: unsupported key type %T", rawkey)
+    return nil, fmt.Errorf("ssh: unsupported key type %T\n", rawkey)
   }
 
   return sshKey, nil
