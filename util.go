@@ -11,12 +11,12 @@ import (
 )
 
 func decodeBase64(in string) []byte {
-	out := make([]byte, base64.StdEncoding.DecodedLen(len(in)))
-	n, err := base64.StdEncoding.Decode(out, []byte(in))
-	if err != nil {
-		return nil
-	}
-	return out[0:n]
+  out := make([]byte, base64.StdEncoding.DecodedLen(len(in)))
+  n, err := base64.StdEncoding.Decode(out, []byte(in))
+  if err != nil {
+    return nil
+  }
+  return out[0:n]
 }
 
 func encodeBase64(in []byte) string {
@@ -98,7 +98,7 @@ func createSlice(w string) string {
 }
 
 func hashSha1(data string) string {
-	h := sha1.New()
-	h.Write([]byte(data))
-	return strings.ToUpper(fmt.Sprintf("%x", h.Sum(nil)))
+  h := sha1.New()
+  h.Write([]byte(data))
+  return strings.ToUpper(fmt.Sprintf("%x", h.Sum(nil)))
 }
