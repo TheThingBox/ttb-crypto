@@ -63,7 +63,6 @@ func CreateMessage(msg string, algo string, rsaPublicPath string, rsaPrivatePath
     keys = append(keys, ig)
 
     signature, _ = private.sign(hashSha1(k))
-    fmt.Printf("signature :\n%s\n", signature)
     cypher, _ = aes.cypher(msg)
     break
   }
@@ -121,7 +120,6 @@ func LoadMessage(msg string, rsaPublicPath string, rsaPrivatePath string) (Messa
   }
 
   signature = data[len(data)-2]
-  fmt.Printf("signature :\n%s\n", signature)
   cypher = data[len(data)-1]
 
   m =  &message{public, private, algo, keys, signature, cypher}
