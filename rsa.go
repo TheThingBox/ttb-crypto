@@ -1,6 +1,7 @@
 package ttb_crypto
 
 import (
+  "bytes"
   "crypto"
   "crypto/rand"
   "crypto/rsa"
@@ -26,9 +27,15 @@ type rsaPublic interface {
 
 func loadPublicKey(path string) (rsaPublic, error) {
   var block *pem.Block = nil
+  var pemStart = []byte("\n-----BEGIN ")
   if fileExists(path) == false {
-    block, _ = pem.Decode([]byte(path))
-    if block == nil {
+    var key = []byte(path)
+    if bytes.HasPrefix(key, pemStart[1:]) || bytes.Index(key, pemStart) >= 0 {
+      block, _ = pem.Decode(key)
+      if block == nil {
+        return nil, fmt.Errorf("ssh: no key found")
+      }
+    } else {
       return nil, fmt.Errorf("Invalid path or the file does not exist: %s", path)
     }
   } else {
@@ -100,9 +107,15 @@ type rsaPrivate interface {
 
 func loadPrivateKey(path string) (rsaPrivate, error) {
   var block *pem.Block = nil
+  var pemStart = []byte("\n-----BEGIN ")
   if fileExists(path) == false {
-    block, _ = pem.Decode([]byte(path))
-    if block == nil {
+    var key = []byte(path)
+    if bytes.HasPrefix(key, pemStart[1:]) || bytes.Index(key, pemStart) >= 0 {
+      block, _ = pem.Decode(key)
+      if block == nil {
+        return nil, fmt.Errorf("ssh: no key found")
+      }
+    } else {
       return nil, fmt.Errorf("Invalid path or the file does not exist: %s", path)
     }
   } else {
