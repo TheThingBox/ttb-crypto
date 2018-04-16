@@ -25,7 +25,7 @@ type rsaPublic interface {
 }
 
 func loadPublicKey(path string) (rsaPublic, error) {
-  var block pem.Block
+  var block *pem.Block = nil
   if fileExists(path) == false {
     block, _ = pem.Decode([]byte(path))
     if block == nil {
@@ -99,7 +99,7 @@ type rsaPrivate interface {
 }
 
 func loadPrivateKey(path string) (rsaPrivate, error) {
-  var block pem.Block
+  var block *pem.Block = nil
   if fileExists(path) == false {
     block, _ = pem.Decode([]byte(path))
     if block == nil {
