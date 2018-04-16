@@ -46,7 +46,7 @@ func loadPublicKey(path string) (rsaPublic, error) {
 
     block, _ = pem.Decode(pemBytes)
     if block == nil {
-      return nil, fmt.Errorf("ssh: no key found into :\n%s\n", key)
+      return nil, fmt.Errorf("ssh: no key found into :\n%s\n", pemBytes)
     }
   }
 
@@ -125,8 +125,8 @@ func loadPrivateKey(path string) (rsaPrivate, error) {
     }
 
     block, _ = pem.Decode(pemBytes)
-    if block == nil
-      return nil, fmt.Errorf("ssh: no key found into :\n%s\n", key)
+    if block == nil {
+      return nil, fmt.Errorf("ssh: no key found into :\n%s\n", pemBytes)
     }
   }
 
