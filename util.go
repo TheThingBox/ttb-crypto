@@ -24,12 +24,10 @@ func encodeBase64(in []byte) string {
 }
 
 func fileExists(path string) bool {
-  if _, err := os.Stat(path); err != nil {
-    if os.IsNotExist(err) {
-      return false
+    if _, err := os.Stat(path); err != nil {
+        return false
     }
-  }
-  return true
+    return true
 }
 
 func parseInt(t string, base int) int {
