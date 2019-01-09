@@ -1,16 +1,16 @@
 package ttb_crypto
 
 import (
-  "bytes"
-  "crypto"
-  "crypto/rand"
-  "crypto/rsa"
-  "crypto/sha256"
-  "crypto/x509"
-  "encoding/pem"
-  "fmt"
-  "io/ioutil"
-  "strings"
+	"bytes"
+	"crypto"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/x509"
+	"encoding/pem"
+	"fmt"
+	"io/ioutil"
+	"strings"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -18,158 +18,157 @@ import (
 ////////////////////////////////////////////////////////////////////////////////
 
 type rsaPublicKey struct {
-  *rsa.PublicKey
+	*rsa.PublicKey
 }
 
 type rsaPublic interface {
-  cypher(message string) (string, error)
-  verify(message string, sig string) bool
+	cypher(message string) (string, error)
+	verify(message string, sig string) bool
 }
 
 func loadPublicKey(path string) (rsaPublic, error) {
-  var block *pem.Block = nil
-  var pemStart = []byte("\n-----BEGIN ")
-  if fileExists(path) == false {
-    var key = []byte(strings.Replace(path, `\n`, "\n", -1))
-    if bytes.HasPrefix(key, pemStart[1:]) || bytes.Index(key, pemStart) >= 0 {
-      block, _ = pem.Decode(key)
-      if block == nil {
-        return nil, fmt.Errorf("ssh: no key found into :\n%s\n", key)
-      }
-    } else {
-      return nil, fmt.Errorf("Invalid path or the file does not exist: %s\n", path)
-    }
-  } else {
-    pemBytes, err := ioutil.ReadFile(path)
-    if err != nil {
-      return nil, err
-    }
+	var block *pem.Block = nil
+	var pemStart = []byte("\n-----BEGIN ")
+	if fileExists(path) == false {
+		var key = []byte(strings.Replace(path, `\n`, "\n", -1))
+		if bytes.HasPrefix(key, pemStart[1:]) || bytes.Index(key, pemStart) >= 0 {
+			block, _ = pem.Decode(key)
+			if block == nil {
+				return nil, fmt.Errorf("ssh: no key found into :\n%s\n", key)
+			}
+		} else {
+			return nil, fmt.Errorf("Invalid path or the file does not exist: %s\n", path)
+		}
+	} else {
+		pemBytes, err := ioutil.ReadFile(path)
+		if err != nil {
+			return nil, err
+		}
 
-    block, _ = pem.Decode(pemBytes)
-    if block == nil {
-      return nil, fmt.Errorf("ssh: no key found into :\n%s\n", pemBytes)
-    }
-  }
+		block, _ = pem.Decode(pemBytes)
+		if block == nil {
+			return nil, fmt.Errorf("ssh: no key found into :\n%s\n", pemBytes)
+		}
+	}
 
-  var sshKey rsaPublic
-  var rawkey interface{}
-  switch block.Type {
-  case "PUBLIC KEY":
-    rsa, err := x509.ParsePKIXPublicKey(block.Bytes)
-    if err != nil {
-      return nil, err
-    }
-    rawkey = rsa
-  default:
-    return nil, fmt.Errorf("ssh: unsupported key type %q", block.Type)
-  }
+	var sshKey rsaPublic
+	var rawkey interface{}
+	switch block.Type {
+	case "PUBLIC KEY":
+		rsa, err := x509.ParsePKIXPublicKey(block.Bytes)
+		if err != nil {
+			return nil, err
+		}
+		rawkey = rsa
+	default:
+		return nil, fmt.Errorf("ssh: unsupported key type %q", block.Type)
+	}
 
-  switch t := rawkey.(type) {
-  case *rsa.PublicKey:
-    sshKey = &rsaPublicKey{t}
-  default:
-    return nil, fmt.Errorf("ssh: unsupported key type %T", rawkey)
-  }
-  return sshKey, nil
+	switch t := rawkey.(type) {
+	case *rsa.PublicKey:
+		sshKey = &rsaPublicKey{t}
+	default:
+		return nil, fmt.Errorf("ssh: unsupported key type %T", rawkey)
+	}
+	return sshKey, nil
 }
 
-func (r *rsaPublicKey) cypher(message string) (data string , err error) {
-  text, err := rsa.EncryptPKCS1v15(rand.Reader, r.PublicKey, []byte(message))
-  if err == nil {
-    data = encodeBase64(text)
-  }
-  return
+func (r *rsaPublicKey) cypher(message string) (data string, err error) {
+	text, err := rsa.EncryptPKCS1v15(rand.Reader, r.PublicKey, []byte(message))
+	if err == nil {
+		data = encodeBase64(text)
+	}
+	return
 }
 
 func (r *rsaPublicKey) verify(message string, sig string) bool {
-  h := sha256.New()
-  h.Write([]byte(message))
-  d := h.Sum(nil)
-  err := rsa.VerifyPKCS1v15(r.PublicKey, crypto.SHA256, d, decodeBase64(sig))
-  if err != nil {
-    return false
-  }
-  return true
+	h := sha256.New()
+	h.Write([]byte(message))
+	d := h.Sum(nil)
+	err := rsa.VerifyPKCS1v15(r.PublicKey, crypto.SHA256, d, decodeBase64(sig))
+	if err != nil {
+		return false
+	}
+	return true
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////// PRIVATE ///////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 type rsaPrivateKey struct {
-  *rsa.PrivateKey
+	*rsa.PrivateKey
 }
 
 type rsaPrivate interface {
-  uncypher(message string) (string, error)
-  sign(message string) (string, error)
+	uncypher(message string) (string, error)
+	sign(message string) (string, error)
 }
 
 func loadPrivateKey(path string) (rsaPrivate, error) {
-  var block *pem.Block = nil
-  var pemStart = []byte("\n-----BEGIN ")
-  if fileExists(path) == false {
-    var key = []byte(strings.Replace(path, `\n`, "\n", -1))
-    if bytes.HasPrefix(key, pemStart[1:]) || bytes.Index(key, pemStart) >= 0 {
-      block, _ = pem.Decode(key)
-      if block == nil {
-        return nil, fmt.Errorf("ssh: no key found into :\n%s\n", key)
-      }
-    } else {
-      return nil, fmt.Errorf("Invalid path or the file does not exist: %s\n", path)
-    }
-  } else {
-    pemBytes, err := ioutil.ReadFile(path)
-    if err != nil {
-      return nil, err
-    }
+	var block *pem.Block = nil
+	var pemStart = []byte("\n-----BEGIN ")
+	if fileExists(path) == false {
+		var key = []byte(strings.Replace(path, `\n`, "\n", -1))
+		if bytes.HasPrefix(key, pemStart[1:]) || bytes.Index(key, pemStart) >= 0 {
+			block, _ = pem.Decode(key)
+			if block == nil {
+				return nil, fmt.Errorf("ssh: no key found into :\n%s\n", key)
+			}
+		} else {
+			return nil, fmt.Errorf("Invalid path or the file does not exist: %s\n", path)
+		}
+	} else {
+		pemBytes, err := ioutil.ReadFile(path)
+		if err != nil {
+			return nil, err
+		}
 
-    block, _ = pem.Decode(pemBytes)
-    if block == nil {
-      return nil, fmt.Errorf("ssh: no key found into :\n%s\n", pemBytes)
-    }
-  }
+		block, _ = pem.Decode(pemBytes)
+		if block == nil {
+			return nil, fmt.Errorf("ssh: no key found into :\n%s\n", pemBytes)
+		}
+	}
 
-  var sshKey rsaPrivate
-  var rawkey interface{}
-  switch block.Type {
-  case "RSA PRIVATE KEY":
-    rsa, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-    if err != nil {
-      return nil, err
-    }
-    rawkey = rsa
-  default:
-    return nil, fmt.Errorf("ssh: unsupported key type %q\n", block.Type)
-  }
+	var sshKey rsaPrivate
+	var rawkey interface{}
+	switch block.Type {
+	case "RSA PRIVATE KEY":
+		rsa, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+		if err != nil {
+			return nil, err
+		}
+		rawkey = rsa
+	default:
+		return nil, fmt.Errorf("ssh: unsupported key type %q\n", block.Type)
+	}
 
-  switch t := rawkey.(type) {
-  case *rsa.PrivateKey:
-    sshKey = &rsaPrivateKey{t}
-  default:
-    return nil, fmt.Errorf("ssh: unsupported key type %T\n", rawkey)
-  }
+	switch t := rawkey.(type) {
+	case *rsa.PrivateKey:
+		sshKey = &rsaPrivateKey{t}
+	default:
+		return nil, fmt.Errorf("ssh: unsupported key type %T\n", rawkey)
+	}
 
-  return sshKey, nil
+	return sshKey, nil
 }
 
-func (r *rsaPrivateKey) uncypher(message string) (data string , err error)  {
-  text, err := rsa.DecryptPKCS1v15(rand.Reader, r.PrivateKey, decodeBase64(message))
-  if err == nil {
-    data = string(text)
-  }
-  return
+func (r *rsaPrivateKey) uncypher(message string) (data string, err error) {
+	text, err := rsa.DecryptPKCS1v15(rand.Reader, r.PrivateKey, decodeBase64(message))
+	if err == nil {
+		data = string(text)
+	}
+	return
 }
 
-func (r *rsaPrivateKey) sign(message string) (data string , err error)  {
-  h := sha256.New()
-  h.Write([]byte(message))
-  d := h.Sum(nil)
+func (r *rsaPrivateKey) sign(message string) (data string, err error) {
+	h := sha256.New()
+	h.Write([]byte(message))
+	d := h.Sum(nil)
 
-  text, err := rsa.SignPKCS1v15(rand.Reader, r.PrivateKey, crypto.SHA256, d)
-  if err == nil {
-    data = encodeBase64(text)
-  }
-  return
+	text, err := rsa.SignPKCS1v15(rand.Reader, r.PrivateKey, crypto.SHA256, d)
+	if err == nil {
+		data = encodeBase64(text)
+	}
+	return
 }
